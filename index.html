@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Simulador de conducción 3D</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #000;
+        }
+
+        #velocimetro {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+
+            padding: 12px 25px;
+            border-radius: 8px;
+
+            font-size: 24px;
+            font-weight: bold;
+
+            z-index: 10;
+        }
+
+        #ayuda {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+
+            padding: 15px;
+            border-radius: 8px;
+
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="ayuda">
+        W / A / S / D para conducir
+    </div>
+
+    <div id="velocimetro">
+        0 km/h
+    </div>
+
+    <!-- Three.js -->
+    <script type="module">
+
+        import * as THREE from
+        'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+
+        // ==========================================
+        // 1. CREAR EL MUNDO
+        // ==========================================
+
+        const escena = new THREE.Scene();
+
+        escena.background = new THREE.Color(0x87ceeb);
+
+
+        // ==========================================
+        // 2. CÁMARA
+        // ==========================================
+
+        const camara = new THREE.PerspectiveCamera(
+            60,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+
+        camara.position.set(0, 5, 10);
+
+
+        // ==========================================
+        // 3. RENDERIZADOR
+        // ==========================================
+
+        const renderizador = new THREE.WebGLRenderer({
+            antialias: true
+        });
+
+        renderizador.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+        document.body.appendChild(renderizador.domElement);
+
+
+        // ==========================================
+        // 4. ILUMINACIÓN
+        // ==========================================
+
+        const luz = new THREE.DirectionalLight(
+            0xffffff,
+            2
+        );
+
+        luz.position.set(50, 100, 50);
+
+        escena.add(luz);
+
+
+        const luzAmbiente =
+            new THREE.AmbientLight(
+                0xffffff,
+                0.5
+            );
+
+        escena.add(luzAmbiente);
+
+
+        // ==========================================
+        // 5. SUELO
+        // ==========================================
+
+        const geometriaSuelo =
+            new THREE.PlaneGeometry(200, 200);
+
+        const materialSuelo =
+            new THREE.MeshStandardMaterial({
+                color: 0x555555
+            });
+
+        const suelo = new THREE.Mesh(
+            geometriaSuelo,
+            materialSuelo
+        );
+
+        suelo.rotation.x = -Math.PI / 2;
+
+        escena.add(suelo);
+
+
+        // ==========================================
+        // 6. COCHE
+        // ==========================================
+
+        const coche = new THREE.Group();
+
+
+        // Carrocería
+        const geometriaCoche =
+            new THREE.BoxGeometry(
+                2,
+                0.7,
+                4
+            );
+
+        const materialCoche =
+            new THREE.MeshStandardMaterial({
+                color: 0xff0000
+            });
+
+        const carroceria =
+            new THREE.Mesh(
+                geometriaCoche,
+                materialCoche
+            );
+
+        carroceria.position.y = 0.6;
+
+        coche.add(carroceria);
+
+
+        // Techo
+        const geometriaTecho =
+            new THREE.BoxGeometry(
+                1.6,
+                0.5,
+                2
+            );
+
+        const materialTecho =
+            new THREE.MeshStandardMaterial({
+                color: 0x222222
+            });
+
+        const techo =
+            new THREE.Mesh(
+                geometriaTecho,
+                materialTecho
+            );
+
+        techo.position.y = 1.15;
+
+        coche.add(techo);
+
+
+        escena.add(coche);
+
+
+        // ==========================================
+        // 7. CONTROLES
+        // ==========================================
+
+        const teclas = {};
+
+        window.addEventListener(
+            "keydown",
+            (evento) => {
+
+                teclas[evento.key.toLowerCase()] = true;
+
+            }
+        );
+
+        window.addEventListener(
+            "keyup",
+            (evento) => {
+
+                teclas[evento.key.toLowerCase()] = false;
+
+            }
+        );
+
+
+        // ==========================================
+        // 8. VARIABLES DEL COCHE
+        // ==========================================
+
+        let velocidad = 0;
+
+        const aceleracion = 15;
+
+        const frenado = 20;
+
+        const velocidadMaxima = 50;
+
+
+        // ==========================================
+        // 9. RELOJ
+        // ==========================================
+
+        const reloj = new THREE.Clock();
+
+
+        // ==========================================
+        // 10. BUCLE PRINCIPAL
+        // ==========================================
+
+        function animar() {
+
+            requestAnimationFrame(animar);
+
+
+            const delta =
+                reloj.getDelta();
+
+
+            // --------------------------
+            // ACELERAR
+            // --------------------------
+
+            if (teclas["w"]) {
+
+                velocidad +=
+                    aceleracion * delta;
+
+            }
+
+
+            // --------------------------
+            // FRENAR
+            // --------------------------
+
+            if (teclas["s"]) {
+
+                velocidad -=
+                    frenado * delta;
+
+            }
+
+
+            // --------------------------
+            // FRENADO NATURAL
+            // --------------------------
+
+            if (!teclas["w"] && !teclas["s"]) {
+
+                velocidad *= 0.98;
+
+            }
+
+
+            // --------------------------
+            // LIMITAR VELOCIDAD
+            // --------------------------
+
+            velocidad = Math.max(
+                0,
+                Math.min(
+                    velocidad,
+                    velocidadMaxima
+                )
+            );
+
+
+            // --------------------------
+            // GIRAR
+            // --------------------------
+
+            if (teclas["a"]) {
+
+                coche.rotation.y +=
+                    1.5 * delta;
+
+            }
+
+            if (teclas["d"]) {
+
+                coche.rotation.y -=
+                    1.5 * delta;
+
+            }
+
+
+            // --------------------------
+            // AVANZAR
+            // --------------------------
+
+            coche.translateZ(
+                -velocidad * delta
+            );
+
+
+            // --------------------------
+            // CÁMARA
+            // --------------------------
+
+            const posicionCamara =
+                new THREE.Vector3(
+                    0,
+                    5,
+                    9
+                );
+
+            posicionCamara.applyQuaternion(
+                coche.quaternion
+            );
+
+            posicionCamara.add(
+                coche.position
+            );
+
+            camara.position.lerp(
+                posicionCamara,
+                0.1
+            );
+
+            camara.lookAt(
+                coche.position
+            );
+
+
+            // --------------------------
+            // VELOCÍMETRO
+            // --------------------------
+
+            const velocidadKmH =
+                Math.round(
+                    velocidad * 3.6
+                );
+
+            document.getElementById(
+                "velocimetro"
+            ).textContent =
+                velocidadKmH + " km/h";
+
+
+            // --------------------------
+            // DIBUJAR
+            // --------------------------
+
+            renderizador.render(
+                escena,
+                camara
+            );
+        }
+
+
+        // Empezar
+        animar();
+
+
+        // ==========================================
+        // 11. CAMBIO DE TAMAÑO
+        // ==========================================
+
+        window.addEventListener(
+            "resize",
+            () => {
+
+                camara.aspect =
+                    window.innerWidth /
+                    window.innerHeight;
+
+                camara.updateProjectionMatrix();
+
+                renderizador.setSize(
+                    window.innerWidth,
+                    window.innerHeight
+                );
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>
