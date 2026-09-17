@@ -16,7 +16,123 @@
             overflow: hidden;
             font-family: Arial, sans-serif;
             background: #000;
+            user-select: none;
         }
+
+        /* ================= PANELES GENÉRICOS ================= */
+
+        .panel {
+            position: fixed;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+
+            padding: 10px 14px;
+            border-radius: 10px;
+
+            font-size: 15px;
+            z-index: 10;
+        }
+
+        .panel-botones {
+            display: flex;
+            gap: 6px;
+        }
+
+        .panel button {
+            width: 44px;
+            height: 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #1b1b1b;
+            border: none;
+            border-radius: 6px;
+
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .panel button:hover {
+            background: #2a2a2a;
+        }
+
+        /* Todos los iconos comparten el mismo ANCHO (24, como en Figma);
+           el alto queda automático para no deformar coche/autobús */
+        .panel button svg {
+            width: 24px;
+            height: auto;
+            color: inherit;
+            display: block;
+        }
+
+        /* Color "seleccionado" para las opciones de Vehículo / Orientación */
+        .panel button.seleccionado {
+            color: #707070;
+            cursor: default;
+        }
+
+        .panel button.seleccionado:hover {
+            background: #1b1b1b;
+        }
+
+        /* Botones de inclinación deshabilitados en los límites */
+        .panel button.deshabilitado {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        .panel button.deshabilitado:hover {
+            background: #1b1b1b;
+        }
+
+        /* ================= BOTÓN INICIO ================= */
+
+        #btn-inicio {
+            top: 20px;
+            left: 20px;
+            padding: 12px 20px;
+            cursor: default;
+        }
+
+        /* ================= VEHÍCULO ================= */
+
+        #panel-vehiculo {
+            top: 80px;
+            left: 20px;
+        }
+
+        /* ================= CÁMARA (INCLINAR / ORIENTACIÓN) ================= */
+
+        #panel-inclinar {
+            top: 20px;
+            right: 20px;
+        }
+
+        #panel-orientacion {
+            top: 80px;
+            right: 20px;
+        }
+
+        /* ================= FUNCIONES DEL VEHÍCULO ================= */
+
+        #panel-funciones {
+            bottom: 30px;
+            left: 20px;
+        }
+
+        /* Colores de estado activo para las funciones del vehículo
+           (mismos valores hexadecimales que traen tus SVG originales) */
+        .color-verde.activo   { color: #00A000; }
+        .color-azul.activo    { color: #0000FF; }
+        .color-rojo.activo    { color: #CF0000; }
+
+        /* ================= VELOCÍMETRO ================= */
 
         #velocimetro {
             position: fixed;
@@ -25,27 +141,14 @@
             transform: translateX(-50%);
 
             background: rgba(0, 0, 0, 0.75);
-            color: white;
+            color: #7CFC00;
 
             padding: 12px 25px;
             border-radius: 8px;
 
             font-size: 24px;
             font-weight: bold;
-
-            z-index: 10;
-        }
-
-        #ayuda {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-
-            padding: 15px;
-            border-radius: 8px;
+            font-variant-numeric: tabular-nums;
 
             z-index: 10;
         }
@@ -54,13 +157,69 @@
 
 <body>
 
-    <div id="ayuda">
-        W / A / S / D para conducir
+    <!-- BOTÓN INICIO (de momento no lleva a ningún sitio) -->
+    <button id="btn-inicio" class="panel">Inicio</button>
+
+    <!-- SELECTOR DE VEHÍCULO -->
+    <div id="panel-vehiculo" class="panel">
+        <span>Vehículo</span>
+        <div class="panel-botones">
+            <button id="btn-vehiculo-coche" title="Coche">
+                <svg width="24" height="17" viewBox="0 0 24 17" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.40763 16.2969C1.40763 16.4679 1.48441 16.6451 1.63157 16.7971C1.76595 16.9427 1.95148 16.9998 2.11784 16.9998H4.58759C4.78592 16.9998 4.95228 16.9237 5.10584 16.7971C5.23381 16.6643 5.3042 16.4806 5.3042 16.2969V12.8082H18.7022V16.2969C18.7022 16.4679 18.779 16.6451 18.9069 16.7971C19.0543 16.9427 19.2396 16.9998 19.4252 16.9998H21.8885C22.0549 16.9998 22.2406 16.9427 22.3942 16.7971C22.5221 16.6451 22.5923 16.4679 22.5923 16.2969V12.8082C22.9635 12.8082 23.3153 12.6626 23.5968 12.3905C23.853 12.1308 24 11.7826 24 11.4152C23.9103 11.0671 23.853 10.7 23.853 10.3326C23.853 9.96548 23.9103 9.59817 24 9.24995V6.52104C24 6.26144 23.968 6.00817 23.853 5.74857C23.7442 5.4953 23.5968 5.23573 23.373 5.0331C23.1682 4.83684 22.9249 4.66589 22.6691 4.57723C22.4067 4.46959 22.1318 4.43161 21.8885 4.43161L20.3723 0.563016C20.2441 0.37941 20.0393 0.195802 19.7964 0.100818C19.5531 -0.0068274 19.2973 -0.0258169 19.0543 0.0311869H4.95227C4.71554 -0.0258169 4.45322 -0.0068274 4.21648 0.100818C3.97335 0.195802 3.78778 0.37941 3.64065 0.563016L2.11784 4.43161C1.8811 4.43161 1.61238 4.46959 1.33724 4.57723C1.07492 4.66589 0.838187 4.83684 0.633428 5.0331C0.409483 5.23573 0.262351 5.4953 0.147164 5.74857C0.0575931 6.00817 0 6.26144 0 6.52104V9.24995C0.185571 9.96548 0.185571 10.7 0 11.4152C0 11.58 0.0384072 11.7444 0.115187 11.9281C0.166352 12.0929 0.281539 12.2574 0.428704 12.3905C0.556649 12.536 0.723034 12.6437 0.889386 12.7005C1.07492 12.7703 1.24127 12.8082 1.40763 12.8082V16.2969ZM19.7258 1.14552L21.0567 4.43161C18.0369 4.30497 15.0168 4.22901 11.9776 4.22901C8.95747 4.22901 5.91844 4.30497 2.89843 4.43161L4.30606 1.14552C4.34446 1.01892 4.43403 0.911272 4.56837 0.835277C4.67716 0.765646 4.82433 0.727632 4.95227 0.727632H19.0543C19.2013 0.727632 19.3355 0.765646 19.4443 0.835277C19.5725 0.911272 19.6685 1.01892 19.7258 1.14552ZM3.3783 6.9959C3.78778 6.9959 4.15889 7.16052 4.45322 7.43911C4.73476 7.73036 4.90111 8.1166 4.90111 8.5028C4.90111 8.9017 4.73476 9.28793 4.45322 9.56652C4.15889 9.85781 3.78778 10.0033 3.3783 10.0033C2.97521 10.0033 2.58491 9.85781 2.30341 9.56652C2.00908 9.28793 1.86191 8.9017 1.86191 8.5028C1.86191 8.1166 2.00908 7.73036 2.30341 7.43911C2.58491 7.16052 2.97521 6.9959 3.3783 6.9959ZM20.6281 6.9959C20.8137 6.9959 20.9993 7.03388 21.2041 7.10988C21.3897 7.17951 21.5558 7.29348 21.7029 7.43911C21.8565 7.58473 21.9844 7.76834 22.0549 7.95195C22.1318 8.13559 22.1509 8.33818 22.1509 8.5028C22.1509 8.9017 22.0038 9.28793 21.7029 9.56652C21.4279 9.85781 21.0376 10.0033 20.6281 10.0033C20.2441 10.0033 19.8541 9.85781 19.5531 9.56652C19.2781 9.28793 19.1116 8.9017 19.1116 8.5028C19.1116 8.1166 19.2781 7.73036 19.5531 7.43911C19.8541 7.16052 20.2441 6.9959 20.6281 6.9959Z" fill="currentColor"/></svg>
+            </button>
+            <button id="btn-vehiculo-autobus" title="Autobús">
+                <svg width="24" height="29" viewBox="0 0 24 29" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_2018_2)"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 13.4326V25.1831H2.33978V27.257C2.33978 28.1784 3.12765 28.9846 4.02758 28.9846C4.43221 28.9846 4.88278 28.8469 5.26482 28.4549C5.60276 28.1095 5.73741 27.6487 5.73741 27.257V25.1831H18.202V27.257C18.202 27.6487 18.3375 28.1095 18.7194 28.4549C19.0347 28.8469 19.5072 28.9846 19.8899 28.9846C20.3399 28.9846 20.7446 28.8469 21.1271 28.4549C21.4644 28.1095 21.5772 27.6487 21.5772 27.257V25.1831H23.9848V13.4326L22.8143 3.47945C22.6344 2.88018 22.2297 2.25826 21.6445 2.005C18.5847 0.668455 15.3225 0.000213623 12.0148 0.000213623C8.6851 0.000213623 5.33277 0.668455 2.27245 2.005C2.02511 2.14292 1.75513 2.32721 1.55253 2.6037C1.37252 2.88018 1.23781 3.20297 1.16991 3.47945L0 13.4326ZM5.91742 19.5155C5.91742 20.5756 5.08481 21.3818 4.02758 21.3818C2.99236 21.3818 2.20507 20.5756 2.20507 19.5155C2.20507 18.4328 2.99236 17.6492 4.02758 17.6492C4.50016 17.6492 4.95016 17.7645 5.33277 18.1789C5.73741 18.5707 5.91742 19.0315 5.91742 19.5155ZM21.7797 19.5155C21.7797 19.9762 21.5772 20.437 21.1945 20.8519C20.8572 21.2432 20.3399 21.3818 19.8899 21.3818C19.44 21.3818 18.9674 21.2432 18.5847 20.8519C18.202 20.437 18.0674 19.9762 18.0674 19.5155C18.0674 18.4328 18.922 17.6492 19.8899 17.6492C20.3399 17.6492 20.8572 17.7645 21.1945 18.1789C21.5772 18.5707 21.7797 19.0315 21.7797 19.5155ZM21.3298 14.4463H2.65506C2.40773 14.4463 2.20507 14.3084 2.06978 14.1009C1.95778 14.032 1.95778 13.8935 1.88984 13.778C1.88984 13.6402 1.88984 13.5712 1.88984 13.4326L2.79033 5.48367C2.79033 5.27677 2.92504 5.0003 3.12765 4.816C3.30766 4.67744 3.51025 4.53951 3.78023 4.53951H20.2272C20.4073 4.53951 20.6772 4.67744 20.8572 4.816C21.0599 5.0003 21.1271 5.27677 21.1945 5.48367L22.0498 13.4326C22.0944 13.6402 22.0498 13.8935 21.9145 14.1009C21.8471 14.2395 21.7125 14.3084 21.6445 14.3774C21.5098 14.4463 21.3972 14.4463 21.3298 14.4463ZM18.6521 3.73271H5.26482C4.88278 3.73271 4.54489 3.4105 4.54489 2.92656C4.54489 2.81121 4.61222 2.6037 4.81481 2.39682C4.95016 2.25826 5.15276 2.21251 5.26482 2.21251H18.6521C19.0347 2.21251 19.372 2.53474 19.372 2.92656C19.372 3.4105 19.0347 3.73271 18.6521 3.73271Z" fill="currentColor"/></g><defs><clipPath id="clip0_2018_2"><rect width="24" height="29" fill="white"/></clipPath></defs></svg>
+            </button>
+        </div>
     </div>
 
-    <div id="velocimetro">
-        0 km/h
+    <!-- INCLINACIÓN DE CÁMARA -->
+    <div id="panel-inclinar" class="panel">
+        <span>Inclinar</span>
+        <div class="panel-botones">
+            <button id="btn-inclinar-abajo" title="Bajar inclinación">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 12L12 19L5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button id="btn-inclinar-arriba" title="Subir inclinación">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12L12 5L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
     </div>
+
+    <!-- ORIENTACIÓN DE CÁMARA -->
+    <div id="panel-orientacion" class="panel">
+        <span>Orientación</span>
+        <div class="panel-botones">
+            <button id="btn-orientacion-norte" title="Norte arriba">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L12 12L3 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12L12 3L3 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button id="btn-orientacion-vehiculo" title="Seguir rumbo del vehículo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 4L15 12L12 10L9 12L12 4Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 20L15 12L12 10L9 12L12 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- FUNCIONES DEL VEHÍCULO -->
+    <div id="panel-funciones" class="panel">
+        <span>Funciones</span>
+        <div class="panel-botones">
+            <button id="btn-intermitente-izq" class="color-verde" title="Intermitente izquierdo (Z)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.16 8.86166H12.2305V3.59998L3.84003 12L12.2305 20.4V15.1383L20.16 15.1383V8.86166Z" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <button id="btn-intermitente-der" class="color-verde" title="Intermitente derecho (X)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.83997 15.1383H11.7695V20.4L20.16 12L11.7695 3.60002V8.8617H3.83997V15.1383Z" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+            <button id="btn-emergencia" class="color-rojo" title="Luces de emergencia (C)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.63403 20.1876H21.366L12 3.81238L2.63403 20.1876Z" stroke="currentColor" stroke-width="1.8"/><path d="M6.77148 17.7876H17.2285L12 8.64587L6.77148 17.7876Z" stroke="currentColor" stroke-width="1.8"/></svg>
+            </button>
+            <button id="btn-claxon" title="Claxon (N)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.62422 7.17522C1.62422 7.17522 1 6.73595 1 7.24843V14.5548C1 14.5548 1.03737 15.0681 1.55106 14.8118C1.58762 14.7737 6.68734 12.3888 11.127 12.4612C11.2002 12.4612 9.76956 12.5344 8.81608 13.0111C8.81608 12.9753 8.00818 13.1957 7.97159 14.0773C7.97159 14.1505 7.86184 15.3251 8.70556 15.3251C8.74213 15.3617 14.6856 15.3251 14.6856 15.3251L18.4286 16.2075C18.4286 16.2075 19.6031 16.2075 20.0429 16.4264C20.0429 16.4264 21.914 16.977 22.7577 15.7651C22.7943 15.7651 24.5549 13.6365 22.1343 11.9846C22.0969 11.9846 20.52 11.0663 19.235 12.3522C19.1984 12.3522 18.6481 13.3795 17.4012 13.3429C17.4012 13.3055 15.2374 13.3429 15.2374 13.3429L15.1627 12.8289L17.6946 12.2774C17.6946 12.2774 18.6123 12.0944 18.5383 10.9573C18.5383 10.9947 18.501 9.89185 17.2907 9.89185C17.2907 9.89185 13.1086 10.0025 11.2741 9.70882C11.2367 9.70882 7.67816 9.01176 7.67816 9.01176C7.67816 9.01176 3.45877 8.27572 1.62422 7.17522Z" fill="currentColor"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- VELOCÍMETRO -->
+    <div id="velocimetro">0 km/h</div>
 
     <!-- Three.js -->
     <script type="module">
@@ -112,22 +271,11 @@
         // 4. ILUMINACIÓN
         // ==========================================
 
-        const luz = new THREE.DirectionalLight(
-            0xffffff,
-            2
-        );
-
+        const luz = new THREE.DirectionalLight(0xffffff, 2);
         luz.position.set(50, 100, 50);
-
         escena.add(luz);
 
-
-        const luzAmbiente =
-            new THREE.AmbientLight(
-                0xffffff,
-                0.5
-            );
-
+        const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.5);
         escena.add(luzAmbiente);
 
 
@@ -135,296 +283,478 @@
         // 5. SUELO
         // ==========================================
 
-        const geometriaSuelo =
-            new THREE.PlaneGeometry(200, 200);
-
-        const materialSuelo =
-            new THREE.MeshStandardMaterial({
-                color: 0x555555
-            });
-
-        const suelo = new THREE.Mesh(
-            geometriaSuelo,
-            materialSuelo
-        );
-
+        const geometriaSuelo = new THREE.PlaneGeometry(400, 400);
+        const materialSuelo = new THREE.MeshStandardMaterial({ color: 0x555555 });
+        const suelo = new THREE.Mesh(geometriaSuelo, materialSuelo);
         suelo.rotation.x = -Math.PI / 2;
-
         escena.add(suelo);
 
 
         // ==========================================
-        // 6. COCHE
+        // 6. VEHÍCULOS (coche y autobús geométricamente simples)
         // ==========================================
 
-        const coche = new THREE.Group();
+        // --- Materiales de las luces, compartidos y actualizados cada frame ---
 
-
-        // Carrocería
-        const geometriaCoche =
-            new THREE.BoxGeometry(
-                2,
-                0.7,
-                4
-            );
-
-        const materialCoche =
-            new THREE.MeshStandardMaterial({
-                color: 0xff0000
+        function crearMaterialLuz(colorApagado, colorEncendido) {
+            const material = new THREE.MeshStandardMaterial({
+                color: colorApagado,
+                emissive: colorApagado,
+                emissiveIntensity: 0.3
             });
+            material.userData = { colorApagado, colorEncendido };
+            return material;
+        }
 
-        const carroceria =
-            new THREE.Mesh(
-                geometriaCoche,
-                materialCoche
+        function encenderLuz(material, encendida, intensidad = 2.5) {
+            const { colorApagado, colorEncendido } = material.userData;
+            material.color.set(encendida ? colorEncendido : colorApagado);
+            material.emissive.set(encendida ? colorEncendido : colorApagado);
+            material.emissiveIntensity = encendida ? intensidad : 0.25;
+        }
+
+        function anadirLucesA(grupo, semiAncho, zFrontal, zTrasera, altoLuces) {
+
+            const matFaro = crearMaterialLuz(0xdddddd, 0xffffff);
+            const matIntermitenteFrontalIzq = crearMaterialLuz(0x553300, 0xffa500);
+            const matIntermitenteFrontalDer = crearMaterialLuz(0x553300, 0xffa500);
+            const matIntermitenteTraseroIzq = crearMaterialLuz(0x553300, 0xffa500);
+            const matIntermitenteTraseroDer = crearMaterialLuz(0x553300, 0xffa500);
+            const matFreno = crearMaterialLuz(0x550000, 0xff0000);
+
+            const geoFaro = new THREE.BoxGeometry(0.32, 0.16, 0.06);
+            const geoIntermitente = new THREE.BoxGeometry(0.18, 0.14, 0.06);
+            const geoFreno = new THREE.BoxGeometry(0.32, 0.16, 0.06);
+
+            const faroIzq = new THREE.Mesh(geoFaro, matFaro);
+            faroIzq.position.set(-semiAncho * 0.65, altoLuces, zFrontal);
+            grupo.add(faroIzq);
+
+            const faroDer = new THREE.Mesh(geoFaro, matFaro.clone());
+            faroDer.position.set(semiAncho * 0.65, altoLuces, zFrontal);
+            grupo.add(faroDer);
+
+            const intermitenteFrontalIzq = new THREE.Mesh(geoIntermitente, matIntermitenteFrontalIzq);
+            intermitenteFrontalIzq.position.set(-semiAncho * 0.92, altoLuces, zFrontal);
+            grupo.add(intermitenteFrontalIzq);
+
+            const intermitenteFrontalDer = new THREE.Mesh(geoIntermitente, matIntermitenteFrontalDer);
+            intermitenteFrontalDer.position.set(semiAncho * 0.92, altoLuces, zFrontal);
+            grupo.add(intermitenteFrontalDer);
+
+            const intermitenteTraseroIzq = new THREE.Mesh(geoIntermitente, matIntermitenteTraseroIzq);
+            intermitenteTraseroIzq.position.set(-semiAncho * 0.92, altoLuces, zTrasera);
+            grupo.add(intermitenteTraseroIzq);
+
+            const intermitenteTraseroDer = new THREE.Mesh(geoIntermitente, matIntermitenteTraseroDer);
+            intermitenteTraseroDer.position.set(semiAncho * 0.92, altoLuces, zTrasera);
+            grupo.add(intermitenteTraseroDer);
+
+            const frenoIzq = new THREE.Mesh(geoFreno, matFreno);
+            frenoIzq.position.set(-semiAncho * 0.65, altoLuces, zTrasera);
+            grupo.add(frenoIzq);
+
+            const frenoDer = new THREE.Mesh(geoFreno, matFreno.clone());
+            frenoDer.position.set(semiAncho * 0.65, altoLuces, zTrasera);
+            grupo.add(frenoDer);
+
+            return {
+                faros: [matFaro, faroDer.material],
+                intermitentesIzq: [matIntermitenteFrontalIzq, matIntermitenteTraseroIzq],
+                intermitentesDer: [matIntermitenteFrontalDer, matIntermitenteTraseroDer],
+                freno: [matFreno, frenoDer.material]
+            };
+        }
+
+        // --- Coche ---
+
+        function crearCoche() {
+            const grupo = new THREE.Group();
+
+            const carroceria = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 0.7, 4),
+                new THREE.MeshStandardMaterial({ color: 0xff0000 })
             );
+            carroceria.position.y = 0.6;
+            grupo.add(carroceria);
 
-        carroceria.position.y = 0.6;
-
-        coche.add(carroceria);
-
-
-        // Techo
-        const geometriaTecho =
-            new THREE.BoxGeometry(
-                1.6,
-                0.5,
-                2
+            const techo = new THREE.Mesh(
+                new THREE.BoxGeometry(1.6, 0.5, 2),
+                new THREE.MeshStandardMaterial({ color: 0x222222 })
             );
+            techo.position.y = 1.15;
+            grupo.add(techo);
 
-        const materialTecho =
-            new THREE.MeshStandardMaterial({
-                color: 0x222222
-            });
+            const luces = anadirLucesA(grupo, 1, -2.02, 2.02, 0.55);
 
-        const techo =
-            new THREE.Mesh(
-                geometriaTecho,
-                materialTecho
+            return { grupo, luces };
+        }
+
+        // --- Autobús (alargado, mismo ancho que el coche) ---
+
+        function crearAutobus() {
+            const grupo = new THREE.Group();
+
+            const carroceria = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 2.2, 9),
+                new THREE.MeshStandardMaterial({ color: 0x1e6fd9 })
             );
+            carroceria.position.y = 1.3;
+            grupo.add(carroceria);
 
-        techo.position.y = 1.15;
+            const bandaVentanas = new THREE.Mesh(
+                new THREE.BoxGeometry(2.02, 0.6, 8.4),
+                new THREE.MeshStandardMaterial({ color: 0x9fd3ff })
+            );
+            bandaVentanas.position.y = 1.9;
+            grupo.add(bandaVentanas);
 
-        coche.add(techo);
+            const luces = anadirLucesA(grupo, 1, -4.52, 4.52, 1.1);
 
+            return { grupo, luces };
+        }
 
-        escena.add(coche);
+        // --- Grupo contenedor: representa la posición/rotación real del vehículo ---
+
+        const vehiculo = new THREE.Group();
+        escena.add(vehiculo);
+
+        const objetoCoche = crearCoche();
+        const objetoAutobus = crearAutobus();
+
+        objetoAutobus.grupo.visible = false;
+
+        vehiculo.add(objetoCoche.grupo);
+        vehiculo.add(objetoAutobus.grupo);
+
+        let tipoVehiculo = "coche"; // "coche" | "autobus"
+        let lucesActivas = objetoCoche.luces;
 
 
         // ==========================================
-        // 7. CONTROLES
+        // 7. CONTROLES DE TECLADO
         // ==========================================
 
         const teclas = {};
 
-        window.addEventListener(
-            "keydown",
-            (evento) => {
+        window.addEventListener("keydown", (evento) => {
+            const tecla = evento.key.toLowerCase();
 
-                teclas[evento.key.toLowerCase()] = true;
+            if (tecla === " ") evento.preventDefault();
 
-            }
-        );
+            teclas[tecla] = true;
 
-        window.addEventListener(
-            "keyup",
-            (evento) => {
+            if (tecla === "z") alternarIntermitente("izquierdo");
+            if (tecla === "x") alternarIntermitente("derecho");
+            if (tecla === "c") alternarEmergencia();
+            if (tecla === "v") alternarLuces("largas");
+            if (tecla === "b") alternarLuces("cortas");
+            if (tecla === "n") tocarClaxon();
+        });
 
-                teclas[evento.key.toLowerCase()] = false;
-
-            }
-        );
-
-
-        // ==========================================
-        // 8. VARIABLES DEL COCHE
-        // ==========================================
-
-        let velocidad = 0;
-
-        const aceleracion = 15;
-
-        const frenado = 20;
-
-        const velocidadMaxima = 50;
+        window.addEventListener("keyup", (evento) => {
+            teclas[evento.key.toLowerCase()] = false;
+        });
 
 
         // ==========================================
-        // 9. RELOJ
+        // 8. ESTADO DEL VEHÍCULO: PERFIL FÍSICO
+        // ==========================================
+
+        const perfiles = {
+            coche:   { aceleracion: 10, frenado: 16, manoFreno: 22, velocidadMaxima: 40, velocidadMaximaReversa: 15, giro: 1.9 },
+            autobus: { aceleracion: 5,  frenado: 9,  manoFreno: 16, velocidadMaxima: 22, velocidadMaximaReversa: 8,  giro: 1.1 }
+        };
+
+        let velocidad = 0; // metros/segundo, puede ser negativo (marcha atrás)
+
+
+        // ==========================================
+        // 9. FUNCIONES / LUCES DEL VEHÍCULO
+        // ==========================================
+
+        let estadoIntermitente = "ninguno"; // "ninguno" | "izquierdo" | "derecho" | "emergencia"
+        let estadoLuces = "apagado";        // "apagado" | "cortas" | "largas"
+
+        function alternarIntermitente(lado) {
+            estadoIntermitente = estadoIntermitente === lado ? "ninguno" : lado;
+            sincronizarBotonesFunciones();
+        }
+
+        function alternarEmergencia() {
+            estadoIntermitente = estadoIntermitente === "emergencia" ? "ninguno" : "emergencia";
+            sincronizarBotonesFunciones();
+        }
+
+        function alternarLuces(tipo) {
+            estadoLuces = estadoLuces === tipo ? "apagado" : tipo;
+            sincronizarBotonesFunciones();
+        }
+
+        // Preparado para cuando exista sonido: de momento solo deja constancia de la acción.
+        function tocarClaxon() {
+            console.log("Claxon: aquí se reproducirá el sonido cuando se implemente sonido.js");
+        }
+
+        function sincronizarBotonesFunciones() {
+            document.getElementById("btn-intermitente-izq").classList.toggle(
+                "activo", estadoIntermitente === "izquierdo" || estadoIntermitente === "emergencia"
+            );
+            document.getElementById("btn-intermitente-der").classList.toggle(
+                "activo", estadoIntermitente === "derecho" || estadoIntermitente === "emergencia"
+            );
+            document.getElementById("btn-emergencia").classList.toggle(
+                "activo", estadoIntermitente === "emergencia"
+            );
+            // Los botones de faros largos/cortos ya no están en la interfaz,
+            // pero las teclas V/B (más abajo) siguen encendiendo las luces igualmente.
+        }
+
+
+        // ==========================================
+        // 10. SELECTOR DE VEHÍCULO
+        // ==========================================
+
+        const btnVehiculoCoche = document.getElementById("btn-vehiculo-coche");
+        const btnVehiculoAutobus = document.getElementById("btn-vehiculo-autobus");
+
+        function elegirVehiculo(tipo) {
+            tipoVehiculo = tipo;
+
+            objetoCoche.grupo.visible = tipo === "coche";
+            objetoAutobus.grupo.visible = tipo === "autobus";
+            lucesActivas = tipo === "coche" ? objetoCoche.luces : objetoAutobus.luces;
+
+            velocidad = 0;
+
+            btnVehiculoCoche.classList.toggle("seleccionado", tipo === "coche");
+            btnVehiculoAutobus.classList.toggle("seleccionado", tipo === "autobus");
+        }
+
+        btnVehiculoCoche.addEventListener("click", () => elegirVehiculo("coche"));
+        btnVehiculoAutobus.addEventListener("click", () => elegirVehiculo("autobus"));
+
+        elegirVehiculo("coche"); // selección por defecto
+
+
+        // ==========================================
+        // 11. INCLINACIÓN DE CÁMARA (3 niveles)
+        // ==========================================
+
+        const nivelesInclinacion = [
+            { altura: 5,  distancia: 9   }, // baja: como se ve ahora
+            { altura: 12, distancia: 6.5 }, // media
+            { altura: 24, distancia: 1.2 }  // alta: casi vertical, vista "2D" desde el aire
+        ];
+
+        let nivelInclinacion = 0;
+
+        const btnInclinarAbajo = document.getElementById("btn-inclinar-abajo");
+        const btnInclinarArriba = document.getElementById("btn-inclinar-arriba");
+
+        function actualizarBotonesInclinacion() {
+            btnInclinarAbajo.classList.toggle("deshabilitado", nivelInclinacion === 0);
+            btnInclinarArriba.classList.toggle("deshabilitado", nivelInclinacion === nivelesInclinacion.length - 1);
+        }
+
+        btnInclinarAbajo.addEventListener("click", () => {
+            nivelInclinacion = Math.max(0, nivelInclinacion - 1);
+            actualizarBotonesInclinacion();
+        });
+
+        btnInclinarArriba.addEventListener("click", () => {
+            nivelInclinacion = Math.min(nivelesInclinacion.length - 1, nivelInclinacion + 1);
+            actualizarBotonesInclinacion();
+        });
+
+        actualizarBotonesInclinacion();
+
+
+        // ==========================================
+        // 12. ORIENTACIÓN DE CÁMARA
+        // ==========================================
+
+        let orientacionCamara = "norte"; // "norte" | "vehiculo"
+
+        const btnOrientacionNorte = document.getElementById("btn-orientacion-norte");
+        const btnOrientacionVehiculo = document.getElementById("btn-orientacion-vehiculo");
+
+        function elegirOrientacion(modo) {
+            orientacionCamara = modo;
+            btnOrientacionNorte.classList.toggle("seleccionado", modo === "norte");
+            btnOrientacionVehiculo.classList.toggle("seleccionado", modo === "vehiculo");
+        }
+
+        btnOrientacionNorte.addEventListener("click", () => elegirOrientacion("norte"));
+        btnOrientacionVehiculo.addEventListener("click", () => elegirOrientacion("vehiculo"));
+
+        elegirOrientacion("norte"); // selección por defecto
+
+
+        // ==========================================
+        // 13. BOTONES DE FUNCIONES (también clicables, no solo teclado)
+        // ==========================================
+
+        document.getElementById("btn-intermitente-izq").addEventListener("click", () => alternarIntermitente("izquierdo"));
+        document.getElementById("btn-intermitente-der").addEventListener("click", () => alternarIntermitente("derecho"));
+        document.getElementById("btn-emergencia").addEventListener("click", alternarEmergencia);
+        document.getElementById("btn-claxon").addEventListener("click", tocarClaxon);
+
+
+        // ==========================================
+        // 14. RELOJ
         // ==========================================
 
         const reloj = new THREE.Clock();
 
+        let tiempoTotal = 0;
+
 
         // ==========================================
-        // 10. BUCLE PRINCIPAL
+        // 15. BUCLE PRINCIPAL
         // ==========================================
 
         function animar() {
 
             requestAnimationFrame(animar);
 
+            const delta = reloj.getDelta();
+            tiempoTotal += delta;
 
-            const delta =
-                reloj.getDelta();
+            const perfil = perfiles[tipoVehiculo];
 
 
             // --------------------------
-            // ACELERAR
+            // ACELERAR / FRENAR / RETROCEDER / FRENO DE MANO
             // --------------------------
 
-            if (teclas["w"]) {
+            const acelerar = teclas["w"] || teclas["arrowup"];
+            const frenarORetroceder = teclas["s"] || teclas["arrowdown"];
+            const frenoDeManoActivo = teclas[" "];
 
-                velocidad +=
-                    aceleracion * delta;
+            if (frenoDeManoActivo) {
 
+                if (velocidad > 0) velocidad = Math.max(0, velocidad - perfil.manoFreno * delta);
+                else if (velocidad < 0) velocidad = Math.min(0, velocidad + perfil.manoFreno * delta);
+
+            } else if (acelerar) {
+
+                velocidad += perfil.aceleracion * delta;
+
+            } else if (frenarORetroceder) {
+
+                if (velocidad > 0) {
+                    velocidad -= perfil.frenado * delta; // frenando
+                } else {
+                    velocidad -= perfil.aceleracion * delta; // acelerando marcha atrás
+                }
+
+            } else {
+
+                velocidad *= 0.98; // rozamiento natural
+
+                if (Math.abs(velocidad) < 0.05) velocidad = 0;
             }
 
-
-            // --------------------------
-            // FRENAR
-            // --------------------------
-
-            if (teclas["s"]) {
-
-                velocidad -=
-                    frenado * delta;
-
-            }
-
-
-            // --------------------------
-            // FRENADO NATURAL
-            // --------------------------
-
-            if (!teclas["w"] && !teclas["s"]) {
-
-                velocidad *= 0.98;
-
-            }
-
-
-            // --------------------------
-            // LIMITAR VELOCIDAD
-            // --------------------------
-
-            velocidad = Math.max(
-                0,
-                Math.min(
-                    velocidad,
-                    velocidadMaxima
-                )
-            );
+            velocidad = Math.max(-perfil.velocidadMaximaReversa, Math.min(velocidad, perfil.velocidadMaxima));
 
 
             // --------------------------
             // GIRAR
             // --------------------------
 
-            if (teclas["a"]) {
-
-                coche.rotation.y +=
-                    1.5 * delta;
-
-            }
-
-            if (teclas["d"]) {
-
-                coche.rotation.y -=
-                    1.5 * delta;
-
-            }
+            if (teclas["a"] || teclas["arrowleft"]) vehiculo.rotation.y += perfil.giro * delta;
+            if (teclas["d"] || teclas["arrowright"]) vehiculo.rotation.y -= perfil.giro * delta;
 
 
             // --------------------------
-            // AVANZAR
+            // AVANZAR / RETROCEDER
             // --------------------------
 
-            coche.translateZ(
-                -velocidad * delta
-            );
+            vehiculo.translateZ(-velocidad * delta);
 
 
             // --------------------------
             // CÁMARA
             // --------------------------
 
-            const posicionCamara =
-                new THREE.Vector3(
-                    0,
-                    5,
-                    9
-                );
+            const { altura, distancia } = nivelesInclinacion[nivelInclinacion];
 
-            posicionCamara.applyQuaternion(
-                coche.quaternion
-            );
+            let posicionCamara;
 
-            posicionCamara.add(
-                coche.position
-            );
+            if (orientacionCamara === "vehiculo") {
+                posicionCamara = new THREE.Vector3(0, altura, distancia);
+                posicionCamara.applyQuaternion(vehiculo.quaternion);
+                posicionCamara.add(vehiculo.position);
+            } else {
+                posicionCamara = vehiculo.position.clone().add(new THREE.Vector3(0, altura, distancia));
+            }
 
-            camara.position.lerp(
-                posicionCamara,
-                0.1
-            );
+            camara.position.lerp(posicionCamara, 0.12);
+            camara.lookAt(vehiculo.position);
 
-            camara.lookAt(
-                coche.position
-            );
+
+            // --------------------------
+            // LUCES DEL VEHÍCULO ACTIVO
+            // --------------------------
+
+            const parpadeoEncendido = Math.floor(tiempoTotal / 0.5) % 2 === 0;
+
+            const intermitenteIzqEncendido = (estadoIntermitente === "izquierdo" || estadoIntermitente === "emergencia") && parpadeoEncendido;
+            const intermitenteDerEncendido = (estadoIntermitente === "derecho" || estadoIntermitente === "emergencia") && parpadeoEncendido;
+            const frenandoOMarchaAtras = frenarORetroceder || frenoDeManoActivo;
+
+            lucesActivas.intermitentesIzq.forEach((m) => encenderLuz(m, intermitenteIzqEncendido));
+            lucesActivas.intermitentesDer.forEach((m) => encenderLuz(m, intermitenteDerEncendido));
+            lucesActivas.freno.forEach((m) => encenderLuz(m, frenandoOMarchaAtras));
+
+            // Un mismo faro cambia de tono según esté apagado, en corto o en largo
+            lucesActivas.faros.forEach((m) => {
+                if (estadoLuces === "cortas") {
+                    m.color.set(0xffffff);
+                    m.emissive.set(0xffffff);
+                    m.emissiveIntensity = 1.2;
+                } else if (estadoLuces === "largas") {
+                    m.color.set(0x8fb8ff);
+                    m.emissive.set(0x8fb8ff);
+                    m.emissiveIntensity = 2.8;
+                } else {
+                    m.color.set(0xdddddd);
+                    m.emissive.set(0xdddddd);
+                    m.emissiveIntensity = 0.25;
+                }
+            });
 
 
             // --------------------------
             // VELOCÍMETRO
             // --------------------------
 
-            const velocidadKmH =
-                Math.round(
-                    velocidad * 3.6
-                );
+            const velocidadKmH = Math.round(Math.abs(velocidad) * 3.6);
 
-            document.getElementById(
-                "velocimetro"
-            ).textContent =
-                velocidadKmH + " km/h";
+            document.getElementById("velocimetro").textContent =
+                velocidadKmH + " km/h" + (velocidad < -0.1 ? " (R)" : "");
 
 
             // --------------------------
             // DIBUJAR
             // --------------------------
 
-            renderizador.render(
-                escena,
-                camara
-            );
+            renderizador.render(escena, camara);
         }
 
-
-        // Empezar
         animar();
 
 
         // ==========================================
-        // 11. CAMBIO DE TAMAÑO
+        // 16. CAMBIO DE TAMAÑO
         // ==========================================
 
-        window.addEventListener(
-            "resize",
-            () => {
-
-                camara.aspect =
-                    window.innerWidth /
-                    window.innerHeight;
-
-                camara.updateProjectionMatrix();
-
-                renderizador.setSize(
-                    window.innerWidth,
-                    window.innerHeight
-                );
-
-            }
-        );
+        window.addEventListener("resize", () => {
+            camara.aspect = window.innerWidth / window.innerHeight;
+            camara.updateProjectionMatrix();
+            renderizador.setSize(window.innerWidth, window.innerHeight);
+        });
 
     </script>
 
