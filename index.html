@@ -256,7 +256,8 @@
 
         const escena = new THREE.Scene();
 
-        escena.background = new THREE.Color(0x87ceeb);
+        // Sin color de fondo: así se ve el mapa satelital de Mapbox de detrás
+        // escena.background = new THREE.Color(0x87ceeb);
 
 
         // ==========================================
@@ -278,8 +279,11 @@
         // ==========================================
 
         const renderizador = new THREE.WebGLRenderer({
-            antialias: true
+            antialias: true,
+            alpha: true // fondo transparente, para que se vea el mapa de Mapbox detrás
         });
+
+        renderizador.setClearColor(0x000000, 0);
 
         renderizador.setSize(
             window.innerWidth,
