@@ -236,7 +236,12 @@
 
 
         // ==========================================
-        // 0. MAPBOX (mapa satelital de fondo)
+        // 0. MAPBOX
+        //
+        // El coche ya NO se dibuja con una cámara de Three.js aparte: se
+        // dibuja usando la MISMA cámara que usa Mapbox para el satélite.
+        // Así, coche y mapa están siempre perfectamente alineados y con la
+        // misma perspectiva (nunca "descuadran" ni cambian de tamaño raro).
         // ==========================================
 
         mapboxgl.accessToken = 'MAPBOX_TOKEN_PLACEHOLDER';
@@ -248,15 +253,67 @@
             container: 'mapbox-container',
             style: 'mapbox://styles/mapbox/satellite-v9',
             center: [origenMapa.lng, origenMapa.lat],
-            zoom: 19,        // zoom de calle, no de pájaro
-            pitch: 60,       // inclinación: vista casi a ras de suelo
+            zoom: 19,
+            pitch: 60,
             bearing: 0,
-            interactive: false // el usuario controla el coche, no el mapa
+            interactive: false, // el usuario controla el coche, no el mapa
+            antialias: true     // suaviza los bordes del coche 3D
         });
 
-        // Metros aproximados que equivalen a 1 grado de longitud/latitud en este punto
-        const metrosPorGradoLat = 110540;
-        const metrosPorGradoLng = 111320 * Math.cos(origenMapa.lat * Math.PI / 180);
+        // Coordenadas internas ("mercator") del punto de partida, y cuántas
+        // de esas unidades equivalen a 1 metro justo ahí.
+        const origenMercator = mapboxgl.MercatorCoordinate.fromLngLat(
+            [origenMapa.lng, origenMapa.lat],
+            0
+        );
+        const escalaMetros = origenMercator.meterInMercatorCoordinateUnits();
+
+        // Convierte un punto de Three.js en metros (x = este, z = sur, y = altura)
+        // a una coordenada real del mapa. Se usa tanto para dibujar el coche
+        // como para colocar la cámara: al usar SIEMPRE esta misma fórmula,
+        // coche y mapa nunca se pueden desincronizar entre sí.
+        function metrosAMercator(punto) {
+            return new mapboxgl.MercatorCoordinate(
+                origenMercator.x + punto.x * escalaMetros,
+                origenMercator.y + punto.z * escalaMetros,
+                origenMercator.z + punto.y * escalaMetros
+            );
+        }
+
+        // Matriz fija (se calcula una sola vez) que "ancla" el mundo de
+        // Three.js —en metros— al punto de partida real del mapa.
+        const matrizAnclaje = new THREE.Matrix4()
+            .makeTranslation(origenMercator.x, origenMercator.y, origenMercator.z)
+            .scale(new THREE.Vector3(escalaMetros, -escalaMetros, escalaMetros))
+            .multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+
+
+        // ==========================================
+        // 0B. CAPA QUE FUSIONA EL COCHE 3D CON LA CÁMARA DE MAPBOX
+        // ==========================================
+
+        const capaVehiculo3D = {
+            id: 'capa-vehiculo-3d',
+            type: 'custom',
+            renderingMode: '3d',
+
+            onAdd(map, gl) {
+                this.camaraCapa = new THREE.Camera();
+                this.renderer = new THREE.WebGLRenderer({
+                    canvas: map.getCanvas(),
+                    context: gl,
+                    antialias: true
+                });
+                this.renderer.autoClear = false;
+            },
+
+            render(gl, matrix) {
+                const matrizCamaraMapa = new THREE.Matrix4().fromArray(matrix);
+                this.camaraCapa.projectionMatrix = matrizCamaraMapa.multiply(matrizAnclaje);
+                this.renderer.resetState();
+                this.renderer.render(escena, this.camaraCapa);
+            }
+        };
 
 
         // ==========================================
@@ -269,37 +326,9 @@
         // escena.background = new THREE.Color(0x87ceeb);
 
 
-        // ==========================================
-        // 2. CÁMARA
-        // ==========================================
-
-        const camara = new THREE.PerspectiveCamera(
-            60,
-            window.innerWidth / window.innerHeight,
-            0.1,
-            1000
-        );
-
-        camara.position.set(0, 5, 10);
-
-
-        // ==========================================
-        // 3. RENDERIZADOR
-        // ==========================================
-
-        const renderizador = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: true // fondo transparente, para que se vea el mapa de Mapbox detrás
-        });
-
-        renderizador.setClearColor(0x000000, 0);
-
-        renderizador.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
-
-        document.body.appendChild(renderizador.domElement);
+        // (Ya no hace falta una cámara ni un renderizador propios de Three.js:
+        // los dibuja todo la capa "capaVehiculo3D" de más arriba, usando la
+        // cámara real de Mapbox.)
 
 
         // ==========================================
@@ -314,16 +343,8 @@
         escena.add(luzAmbiente);
 
 
-        // ==========================================
-        // 5. SUELO
-        // ==========================================
-
-        const geometriaSuelo = new THREE.PlaneGeometry(400, 400);
-        const materialSuelo = new THREE.MeshStandardMaterial({ color: 0x555555 });
-        const suelo = new THREE.Mesh(geometriaSuelo, materialSuelo);
-        suelo.rotation.x = -Math.PI / 2;
-        suelo.visible = false; // ocultamos el suelo: ahora la "carretera" es el mapa satelital de detrás
-        escena.add(suelo);
+        // (Ya no hay un "suelo" gris de Three.js: la carretera es directamente
+        // la imagen satelital de Mapbox, vista con la misma cámara que el coche.)
 
 
         // ==========================================
@@ -645,6 +666,14 @@
 
         let tiempoTotal = 0;
 
+        // Posición de la cámara, en metros relativos al origen del mapa,
+        // suavizada frame a frame (evita que la cámara "salte")
+        let posicionCamaraSuave = new THREE.Vector3(
+            0,
+            nivelesInclinacion[0].altura,
+            nivelesInclinacion[0].distancia
+        );
+
 
         // ==========================================
         // 15. BUCLE PRINCIPAL
@@ -711,39 +740,30 @@
 
 
             // --------------------------
-            // CÁMARA
+            // CÁMARA (ahora es la cámara real de Mapbox, no una de Three.js)
             // --------------------------
 
             const { altura, distancia } = nivelesInclinacion[nivelInclinacion];
 
-            let posicionCamara;
+            let posicionCamaraObjetivo;
 
             if (orientacionCamara === "vehiculo") {
-                posicionCamara = new THREE.Vector3(0, altura, distancia);
-                posicionCamara.applyQuaternion(vehiculo.quaternion);
-                posicionCamara.add(vehiculo.position);
+                posicionCamaraObjetivo = new THREE.Vector3(0, altura, distancia);
+                posicionCamaraObjetivo.applyQuaternion(vehiculo.quaternion);
+                posicionCamaraObjetivo.add(vehiculo.position);
             } else {
-                posicionCamara = vehiculo.position.clone().add(new THREE.Vector3(0, altura, distancia));
+                posicionCamaraObjetivo = vehiculo.position.clone().add(new THREE.Vector3(0, altura, distancia));
             }
 
-            camara.position.lerp(posicionCamara, 0.12);
-            camara.lookAt(vehiculo.position);
+            posicionCamaraSuave.lerp(posicionCamaraObjetivo, 0.12);
 
+            const camaraLibre = mapaMapbox.getFreeCameraOptions();
+            camaraLibre.position = metrosAMercator(posicionCamaraSuave);
 
-            // --------------------------
-            // SINCRONIZAR EL MAPA CON EL COCHE
-            // --------------------------
+            const objetivoMercator = metrosAMercator(vehiculo.position);
+            camaraLibre.lookAtPoint(objetivoMercator.toLngLat(), [0, 0, 1]);
 
-            const nuevaLng = origenMapa.lng + (vehiculo.position.x / metrosPorGradoLng);
-            const nuevaLat = origenMapa.lat - (vehiculo.position.z / metrosPorGradoLat);
-
-            // Bearing del mapa: gira el mapa para que "delante del coche" siempre sea "arriba" en pantalla
-            const bearingMapa = THREE.MathUtils.radToDeg(vehiculo.rotation.y);
-
-            mapaMapbox.jumpTo({
-                center: [nuevaLng, nuevaLat],
-                bearing: bearingMapa
-            });
+            mapaMapbox.setFreeCameraOptions(camaraLibre);
 
 
             // --------------------------
@@ -789,13 +809,18 @@
 
 
             // --------------------------
-            // DIBUJAR
+            // DIBUJAR (le pedimos a Mapbox que repinte; eso llama automáticamente
+            // a "render" dentro de capaVehiculo3D, definida más arriba)
             // --------------------------
 
-            renderizador.render(escena, camara);
+            mapaMapbox.triggerRepaint();
         }
 
-        animar();
+        // Esperamos a que el mapa esté listo antes de añadir el coche y arrancar
+        mapaMapbox.on('load', () => {
+            mapaMapbox.addLayer(capaVehiculo3D);
+            animar();
+        });
 
 
         // ==========================================
@@ -803,9 +828,7 @@
         // ==========================================
 
         window.addEventListener("resize", () => {
-            camara.aspect = window.innerWidth / window.innerHeight;
-            camara.updateProjectionMatrix();
-            renderizador.setSize(window.innerWidth, window.innerHeight);
+            mapaMapbox.resize();
         });
 
     </script>
