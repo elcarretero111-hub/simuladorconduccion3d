@@ -6,6 +6,10 @@
 
     <title>Simulador de conducción 3D</title>
 
+    <!-- Mapbox GL JS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
     <style>
         * {
             box-sizing: border-box;
@@ -157,6 +161,9 @@
 
 <body>
 
+    <!-- CONTENEDOR DEL MAPA SATELITAL DE MAPBOX (fondo, detrás del simulador 3D) -->
+    <div id="mapbox-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+
     <!-- BOTÓN INICIO (de momento no lleva a ningún sitio) -->
     <button id="btn-inicio" class="panel">Inicio</button>
 
@@ -226,6 +233,21 @@
 
         import * as THREE from
         'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+
+
+        // ==========================================
+        // 0. MAPBOX (mapa satelital de fondo)
+        // ==========================================
+
+        mapboxgl.accessToken = 'MAPBOX_TOKEN_PLACEHOLDER';
+
+        const mapaMapbox = new mapboxgl.Map({
+            container: 'mapbox-container',
+            style: 'mapbox://styles/mapbox/satellite-v9',
+            center: [-3.6843, 40.4168], // Madrid — cámbialo por donde quieras
+            zoom: 14,
+            interactive: false // el usuario controla el coche, no el mapa
+        });
 
 
         // ==========================================
