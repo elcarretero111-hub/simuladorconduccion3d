@@ -19,11 +19,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       - name: Inject Mapbox Token
         env:
           MAPBOX_TOKEN: ${{ secrets.MAPBOX_ACCESS_TOKEN }}
-        run: |
-          sed -i "s|MAPBOX_TOKEN_PLACEHOLDER|$MAPBOX_TOKEN|g" index.html
+        run: node inject-token.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
