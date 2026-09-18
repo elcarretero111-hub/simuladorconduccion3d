@@ -241,13 +241,22 @@
 
         mapboxgl.accessToken = 'MAPBOX_TOKEN_PLACEHOLDER';
 
+        // Punto de partida en el mapa (cámbialo por donde quieras conducir)
+        const origenMapa = { lng: -3.6843, lat: 40.4168 };
+
         const mapaMapbox = new mapboxgl.Map({
             container: 'mapbox-container',
             style: 'mapbox://styles/mapbox/satellite-v9',
-            center: [-3.6843, 40.4168], // Madrid — cámbialo por donde quieras
-            zoom: 14,
+            center: [origenMapa.lng, origenMapa.lat],
+            zoom: 19,        // zoom de calle, no de pájaro
+            pitch: 60,       // inclinación: vista casi a ras de suelo
+            bearing: 0,
             interactive: false // el usuario controla el coche, no el mapa
         });
+
+        // Metros aproximados que equivalen a 1 grado de longitud/latitud en este punto
+        const metrosPorGradoLat = 110540;
+        const metrosPorGradoLng = 111320 * Math.cos(origenMapa.lat * Math.PI / 180);
 
 
         // ==========================================
@@ -313,6 +322,7 @@
         const materialSuelo = new THREE.MeshStandardMaterial({ color: 0x555555 });
         const suelo = new THREE.Mesh(geometriaSuelo, materialSuelo);
         suelo.rotation.x = -Math.PI / 2;
+        suelo.visible = false; // ocultamos el suelo: ahora la "carretera" es el mapa satelital de detrás
         escena.add(suelo);
 
 
@@ -718,6 +728,22 @@
 
             camara.position.lerp(posicionCamara, 0.12);
             camara.lookAt(vehiculo.position);
+
+
+            // --------------------------
+            // SINCRONIZAR EL MAPA CON EL COCHE
+            // --------------------------
+
+            const nuevaLng = origenMapa.lng + (vehiculo.position.x / metrosPorGradoLng);
+            const nuevaLat = origenMapa.lat - (vehiculo.position.z / metrosPorGradoLat);
+
+            // Bearing del mapa: gira el mapa para que "delante del coche" siempre sea "arriba" en pantalla
+            const bearingMapa = THREE.MathUtils.radToDeg(vehiculo.rotation.y);
+
+            mapaMapbox.jumpTo({
+                center: [nuevaLng, nuevaLat],
+                bearing: bearingMapa
+            });
 
 
             // --------------------------
