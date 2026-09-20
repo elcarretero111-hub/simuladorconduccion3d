@@ -256,6 +256,8 @@
             zoom: 19,
             pitch: 60,
             bearing: 0,
+            maxPitch: 85, // Mapbox limita a 60° por defecto; lo subimos para permitir
+                          // una cámara "a ras de suelo" detrás del coche
             interactive: false, // el usuario controla el coche, no el mapa
             antialias: true     // suaviza los bordes del coche 3D
         });
