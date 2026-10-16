@@ -249,17 +249,37 @@
         // Punto de partida en el mapa (cámbialo por donde quieras conducir)
         const origenMapa = { lng: -3.6843, lat: 40.4168 };
 
+        // Detalle máximo de las teselas del satélite.
+        // 19 = teselas grandes y rápidas; 20 = más nítido; 21 = lo más pesado.
+        const ZOOM_MAXIMO_SATELITE = 20;
+
         const mapaMapbox = new mapboxgl.Map({
             container: 'mapbox-container',
-            style: 'mapbox://styles/mapbox/satellite-v9',
+            style: {
+                version: 8,
+                sources: {
+                    satelite: {
+                        type: 'raster',
+                        url: 'mapbox://mapbox.satellite',
+                        tileSize: 256,
+                        maxzoom: ZOOM_MAXIMO_SATELITE
+                    }
+                },
+                layers: [{
+                    id: 'satelite',
+                    type: 'raster',
+                    source: 'satelite',
+                    paint: { 'raster-fade-duration': 0 } // sin fundido al aparecer teselas
+                }]
+            },
             center: [origenMapa.lng, origenMapa.lat],
             zoom: 19,
             pitch: 60,
             bearing: 0,
-            maxPitch: 85, // Mapbox limita a 60° por defecto; lo subimos para permitir
-                          // una cámara "a ras de suelo" detrás del coche
-            interactive: false, // el usuario controla el coche, no el mapa
-            antialias: true     // suaviza los bordes del coche 3D
+            maxPitch: 85,
+            interactive: false,
+            antialias: true,
+            maxTileCacheZoomLevels: 8 // recuerda más teselas ya vistas
         });
 
         // Coordenadas internas ("mercator") del punto de partida, y cuántas
